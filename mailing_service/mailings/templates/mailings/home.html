@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="card bg-light shadow mb-3">
+                <div class="card-body d-flex flex-column align-items-center">
+                    <div class="mb-3">
+                        <i class="fas fa-envelope text-primary fs-3"></i>
+                    </div>
+                    <h5 class="card-title">Всего рассылок</h5>
+                    <h1 class="display-4">{{ total_mailings }}</h1>
+                    <small class="text-muted">За все время работы</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card bg-light shadow mb-3">
+                <div class="card-body d-flex flex-column align-items-center">
+                    <div class="mb-3">
+                        <i class="fas fa-play text-success fs-3"></i>
+                    </div>
+                    <h5 class="card-title">Активных рассылок</h5>
+                    <h1 class="display-4">{{ active_mailings }}</h1>
+                    <small class="text-muted">В данный момент</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card bg-light shadow mb-3">
+                <div class="card-body d-flex flex-column align-items-center">
+                    <div class="mb-3">
+                        <i class="fas fa-users text-primary fs-3"></i>
+                    </div>
+                    <h5 class="card-title">Уникальных получателей</h5>
+                    <h1 class="display-4">{{ unique_recipients }}</h1>
+                    <small class="text-muted">Всего контактов</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col text-center">
+            <a href="{% url 'mailing_list' %}" class="btn btn-primary btn-lg">
+                Перейти к рассылкам
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 8px;
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-body {
+    padding: 2rem;
+}
+</style>
+{% endblock %}
