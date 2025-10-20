@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Статистика рассылок{% endblock %}
+
+{% block content %}
+<h1>Статистика рассылок</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card bg-light mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Всего рассылок</h5>
+                <h1 class="display-4">{{ total_mailings }}</h1>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Успешных рассылок</h5>
+                <h1 class="display-4">{{ success_mailings }}</h1>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-danger text-white mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Неуспешных рассылок</h5>
+                <h1 class="display-4">{{ fail_mailings }}</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2>Детализация по рассылкам</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Рассылка</th>
+            <th>Дата создания</th>
+            <th>Статус</th>
+            <th>Успешных попыток</th>
+            <th>Неуспешных попыток</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for stat in stats %}
+        <tr>
+            <td>{{ stat.mailing }}</td>
+            <td>{{ stat.created_at }}</td>
+            <td>{{ stat.mailing.get_status_display }}</td>
+            <td>{{ stat.success_attempts }}</td>
+            <td>{{ stat.fail_attempts }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
