@@ -1,4 +1,5 @@
 from django.core.mail import send_mail
+from django.core.paginator import Paginator
 from django.db.models import Count, Sum
 from django.views.generic import (
     ListView,
@@ -15,6 +16,7 @@ from django.core.mail import EmailMessage
 
 from .utils import UserAccessMixin, ManagerAccessMixin
 from mailing_service import settings
+from django.core.cache import cache
 
 
 def home(request):
@@ -74,6 +76,16 @@ class RecipientListView(ListView):
     template_name = 'mailings/recipient_list.html'
     context_object_name = 'recipients'
 
+    def get_queryset(self):
+        cache_key = 'recipients_list'
+        recipients = cache.get(cache_key)
+
+        if not recipients:
+            recipients = super().get_queryset()
+            cache.set(cache_key, recipients, timeout=3600)  # Кешируем на 1 час
+
+        return recipients
+
 
 class RecipientCreateView(CreateView):
     # Создание
@@ -106,7 +118,22 @@ class MessageListView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return super().get_queryset().filter(is_published=True)
+        cache_key = f'messages_list_{self.paginate_by}'
+        queryset = cache.get(cache_key)
+
+        if not queryset:
+            queryset = super().get_queryset().filter(is_published=True)
+            cache.set(cache_key, queryset, timeout=3600)  # Кешируем на 1 час
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        paginator = Paginator(self.get_queryset(), self.paginate_by)
+        page_number = self.kwargs.get('page') or self.request.GET.get('page') or 1
+        page_obj = paginator.get_page(page_number)
+        context['page_obj'] = page_obj
+        return context
 
 
 class MessageCreateView(CreateView):

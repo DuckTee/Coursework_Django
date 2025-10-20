@@ -157,3 +157,16 @@ STATICFILES_DIRS = [
 LOGIN_REDIRECT_URL = '/mailings/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
+
+
+# Кеширование
+
+CACHE_ENABLED = os.getenv('CACHE_ENABLED', 'False') == 'True'
+
+if CACHE_ENABLED:
+    CACHES = {
+        'default': {
+            'BACKEND': os.getenv('CACHE_BACKEND', 'django.core.cache.backends.locmem.LocMemCache'),
+            'LOCATION': os.getenv('CACHE_LOCATION', 'redis://localhost:6379/1'),
+        }
+    }

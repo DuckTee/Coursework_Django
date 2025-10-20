@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.decorators.cache import cache_page
 
 from . import views
 from .views import (
@@ -26,13 +27,13 @@ urlpatterns = [
     # --- "Пользователь" ---
 
     # --- "Получатель рассылки" ---
-    path('recipients/', RecipientListView.as_view(), name='recipient_list'),
+    path('recipients/', cache_page(60)(RecipientListView.as_view()), name='recipient_list'),
     path('recipients/create/', RecipientCreateView.as_view(), name='recipient_create'),
     path('recipients/<int:pk>/update/', RecipientUpdateView.as_view(), name='recipient_update'),
     path('recipients/<int:pk>/delete/', RecipientDeleteView.as_view(), name='recipient_delete'),
 
     # --- "Управление сообщениями" ---
-    path('messages/', MessageListView.as_view(), name='message_list'),
+    path('messages/', cache_page(60)(MessageListView.as_view()), name='message_list'),
     path('messages/create/', MessageCreateView.as_view(), name='message_create'),
     path('messages/<int:pk>/update/', MessageUpdateView.as_view(), name='message_update'),
     path('messages/<int:pk>/delete/', MessageDeleteView.as_view(), name='message_delete'),
