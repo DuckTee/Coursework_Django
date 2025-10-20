@@ -10,7 +10,8 @@ from django.urls import reverse_lazy
 from .models import Recipient, Message, Mailing, Attempt, MailingStats, CustomUser
 from .forms import RecipientForm, MessageForm, MailingForm
 from django.shortcuts import render, redirect, get_object_or_404
-from django.core.exceptions import EmailSendError
+import smtplib
+from django.core.mail import EmailMessager
 
 from .utils import UserAccessMixin, ManagerAccessMixin
 from ..mailing_service import settings

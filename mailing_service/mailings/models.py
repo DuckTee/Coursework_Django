@@ -17,12 +17,8 @@ class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     is_admin = models.BooleanField(default=False)
 
-    # Дополнительные связи
-    created_mailings = models.ManyToManyField(
-        'Mailing',
-        related_name='created_by',
-        blank=True
-    )
+    def __str__(self):
+        return self.username
 
 
 # --- Модель "Получатель рассылки" ---
@@ -44,14 +40,14 @@ class Message(models.Model):
     subject = models.CharField(max_length=255, verbose_name='Тема письма')
     body = models.TextField(verbose_name='Тело письма')
     created_at = models.DateTimeField(default=timezone.now, verbose_name='Дата создания')
-    is_published = models.BooleanField(default=False, verbose_name='Опубликоваровано')
+    is_published = models.BooleanField(default=False, verbose_name='Опубликовано')
 
     created_by = models.ForeignKey(
-        CustomUser,
+        'CustomUser',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='recipients'
+        related_name='messages'
     )
 
     def __str__(self):
@@ -60,7 +56,7 @@ class Message(models.Model):
     class Meta:
         verbose_name = 'Сообщение'
         verbose_name_plural = 'Сообщения'
-        ordering = '-created_at'
+        ordering = ['-created_at']
 
 
 # --- Модель "Рассылка" ---
@@ -78,7 +74,7 @@ class Mailing(models.Model):
     recipients = models.ManyToManyField('Recipient')
 
     created_by = models.ForeignKey(
-        CustomUser,
+        'CustomUser',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -102,8 +98,8 @@ class Attempt(models.Model):
 
 # --- Модель "Xранениe статистики" ---
 class MailingStats(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='stats')
-    mailing = models.ForeignKey(Mailing, on_delete=models.CASCADE)
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='stats')
+    mailing = models.ForeignKey('Mailing', on_delete=models.CASCADE)
     total_attempts = models.PositiveIntegerField(default=0)
     success_attempts = models.PositiveIntegerField(default=0)
     fail_attempts = models.PositiveIntegerField(default=0)

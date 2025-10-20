@@ -18,27 +18,12 @@ from .views import (
     send_mailing,
     home,
     user_stats,
-    UserMailingListView,
-    UserRecipientListView,
-    ManagerMailingListView,
-    ManagerRecipientListView,
-    UserList,
-    BlockUserView
 )
 
 urlpatterns = [
     path('', home, name='home'),
 
     # --- "Пользователь" ---
-    # Для обычных пользователей
-    path('mailings/', UserMailingListView.as_view(), name='user_mailings'),
-    path('recipients/', UserRecipientListView.as_view(), name='user_recipients'),
-
-    # Для менеджеров
-    path('manager/mailings/', ManagerMailingListView.as_view(), name='manager_mailings'),
-    path('manager/recipients/', ManagerRecipientListView.as_view(), name='manager_recipients'),
-    path('manager/users/', UserList.as_view(), name='user_list'),
-    path('manager/block/<int:pk>/', BlockUserView.as_view(), name='block_user'),
 
     # --- "Получатель рассылки" ---
     path('recipients/', RecipientListView.as_view(), name='recipient_list'),

@@ -144,3 +144,5 @@ EMAIL_HOST_USER = 'k.brantova2015@yandex.ru'
 EMAIL_HOST_PASSWORD = 'edbebkecvcfigars'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
+
+AUTH_USER_MODEL = 'mailings.CustomUser'
