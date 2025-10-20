@@ -1,0 +1,35 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Статистика рассылок{% endblock %}
+
+{% block content %}
+<h1>Статистика рассылок</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card bg-light mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Всего попыток</h5>
+                <h1 class="display-4">{{ total_attempts }}</h1>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Успешных попыток</h5>
+                <h1 class="display-4">{{ total_success }}</h1>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-danger text-white mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Неуспешных попыток</h5>
+                <h1 class="display-4">{{ total_fail }}</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2>
