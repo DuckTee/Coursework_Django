@@ -11,6 +11,41 @@ class CustomUser(AbstractUser):
         ('manager', 'Менеджер')
     ]
 
+    # Отключаем стандартное поле username
+    username = None
+
+    # Делаем email обязательным полем для авторизации
+    email = models.EmailField(unique=True, verbose_name='Email')
+
+    # Номер телефона
+    phone_number = models.CharField(
+        max_length=15,
+        blank=True,
+        null=True,
+        verbose_name='Номер телефона',
+        help_text='Введите номер телефона'
+    )
+
+    # Страна
+    country = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='Страна'
+    )
+
+    # Токен
+    token = models.CharField(
+        max_length=100,
+        verbose_name='Токен',
+        blank=True,
+        null=True
+    )
+
+    # Указываем email как уникальное поле для входа
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
     is_blocked = models.BooleanField(default=False)
     
