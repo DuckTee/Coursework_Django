@@ -11,10 +11,10 @@ from .models import Recipient, Message, Mailing, Attempt, MailingStats, CustomUs
 from .forms import RecipientForm, MessageForm, MailingForm
 from django.shortcuts import render, redirect, get_object_or_404
 import smtplib
-from django.core.mail import EmailMessager
+from django.core.mail import EmailMessage
 
 from .utils import UserAccessMixin, ManagerAccessMixin
-from ..mailing_service import settings
+from mailing_service import settings
 
 
 def home(request):
@@ -27,32 +27,38 @@ def home(request):
     # Подсчет уникальных получателей
     unique_recipients = Recipient.objects.count()
 
-    return render(request, 'home.html', {
+    return render(request, 'mailings/home.html', {
         'total_mailings': total_mailings,
         'active_mailings': active_mailings,
         'unique_recipients': unique_recipients
     })
+
 
 # --- "Пользователь" ---
 class UserMailingListView(UserAccessMixin):
     def get_queryset(self):
         return Mailing.objects.filter(created_by=self.request.user)
 
+
 class ManagerMailingListView(ManagerAccessMixin):
     def get_queryset(self):
         return Mailing.objects.all()
+
 
 class UserRecipientListView(UserAccessMixin):
     def get_queryset(self):
         return Recipient.objects.filter(created_by=self.request.user)
 
+
 class ManagerRecipientListView(ManagerAccessMixin):
     def get_queryset(self):
         return Recipient.objects.all()
 
+
 class UserList(ManagerAccessMixin):
     def get_queryset(self):
         return CustomUser.objects.all()
+
 
 class BlockUserView(ManagerAccessMixin):
     def post(self, request, pk):
@@ -68,6 +74,7 @@ class RecipientListView(ListView):
     template_name = 'mailings/recipient_list.html'
     context_object_name = 'recipients'
 
+
 class RecipientCreateView(CreateView):
     # Создание
     model = Recipient
@@ -75,12 +82,14 @@ class RecipientCreateView(CreateView):
     template_name = 'mailings/recipient_form.html'
     success_url = reverse_lazy('recipient_list')
 
+
 class RecipientUpdateView(UpdateView):
     # Редактирование
     model = Recipient
     form_class = RecipientForm
     template_name = 'mailings/recipient_form.html'
     success_url = reverse_lazy('recipient_list')
+
 
 class RecipientDeleteView(DeleteView):
     # Удаление
@@ -128,6 +137,7 @@ def mailing_list(request):
     mailings = Mailing.objects.all()
     return render(request, 'mailings/mailing_list.html', {'mailings': mailings})
 
+
 def mailing_create(request):
     # Создание
     if request.method == 'POST':
@@ -138,6 +148,7 @@ def mailing_create(request):
     else:
         form = MailingForm()
     return render(request, 'mailings/mailing_form.html', {'form': form})
+
 
 def mailing_edit(request, pk):
     # Редактирование
@@ -151,6 +162,7 @@ def mailing_edit(request, pk):
         form = MailingForm(instance=mailing)
     return render(request, 'mailings/mailing_form.html', {'form': form})
 
+
 def mailing_delete(request, pk):
     # Удаление
     mailing = get_object_or_404(Mailing, pk=pk)
@@ -160,20 +172,79 @@ def mailing_delete(request, pk):
     return render(request, 'mailings/mailing_confirm_delete.html', {'mailing': mailing})
 
 
-def send_mailing(request, pk):
-    mailing = get_object_or_404(Mailing, pk=pk)
+def send_mailing(request, pk=None):
+    """Функция для отправки рассылки"""
+    if pk:
+        mailing = get_object_or_404(Mailing, pk=pk)
+    else:
+        return redirect('mailing_list')
+
     recipients = mailing.recipients.all()
+    success_count = 0
+    fail_count = 0
 
-    for recipient in recipients:
-        send_mail(
-            mailing.message.subject,
-            mailing.message.body,
-            settings.DEFAULT_FROM_EMAIL,
-            [recipient.email],
-            fail_silently=False,
+    try:
+        for recipient in recipients:
+            try:
+                # Используем EmailMessage для лучшего контроля
+                email = EmailMessage(
+                    mailing.message.subject,
+                    mailing.message.body,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [recipient.email],
+                )
+                email.send(fail_silently=False)
+
+                # Успешная попытка
+                Attempt.objects.create(
+                    mailing=mailing,
+                    status='success',
+                    server_response='Письмо успешно отправлено'
+                )
+                success_count += 1
+
+            except smtplib.SMTPException as e:
+                # Ошибка SMTP
+                Attempt.objects.create(
+                    mailing=mailing,
+                    status='fail',
+                    server_response=f'SMTP ошибка: {str(e)}'
+                )
+                fail_count += 1
+
+            except Exception as e:
+                # Другие ошибки
+                Attempt.objects.create(
+                    mailing=mailing,
+                    status='fail',
+                    server_response=f'Ошибка отправки: {str(e)}'
+                )
+                fail_count += 1
+
+        # Обновляем статистику
+        update_mailing_stats(mailing)
+
+        # Добавляем сообщение об успехе (если это HTTP-запрос)
+        if request and hasattr(request, '_messages'):
+            from django.contrib import messages
+            if success_count > 0:
+                messages.success(request, f'Успешно отправлено: {success_count} писем')
+            if fail_count > 0:
+                messages.warning(request, f'Не удалось отправить: {fail_count} писем')
+
+    except Exception as e:
+        # Общая ошибка при отправке
+        Attempt.objects.create(
+            mailing=mailing,
+            status='fail',
+            server_response=f'Критическая ошибка: {str(e)}'
         )
+        if request and hasattr(request, '_messages'):
+            from django.contrib import messages
+            messages.error(request, f'Ошибка при отправке рассылки: {str(e)}')
 
-    return redirect('mailing_list')
+    if request:  # Если функция вызвана из view (не из планировщика)
+        return redirect('mailing_list')
 
 
 # --- "Попытки рассылок" ---

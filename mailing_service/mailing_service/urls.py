@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth import views as auth_views
 
 from mailings.views import home
 
@@ -23,4 +24,10 @@ urlpatterns = [
     path('', home, name='home'),
     path('admin/', admin.site.urls),
     path('mailings/', include('mailings.urls')),
+
+    # Добавляем URL для аутентификации
+    path('login/', auth_views.LoginView.as_view(template_name='mailings/registration/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
+    path('register/', auth_views.LoginView.as_view(template_name='mailings/registration/register.html'), name='register'),
+    path('profile/', auth_views.LoginView.as_view(template_name='mailings/registration/profile.html'), name='profile'),
 ]

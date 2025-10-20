@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Recipient
+from .models import Recipient, Message
 
 @admin.register(Recipient)
 class RecipientAdmin(admin.ModelAdmin):
@@ -10,4 +10,4 @@ class RecipientAdmin(admin.ModelAdmin):
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('subject', 'created_at')
     search_fields = ('subject', 'body')
-    date_hierarchy = 'created_at
+    date_hierarchy = 'created_at'

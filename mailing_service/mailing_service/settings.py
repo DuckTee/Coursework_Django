@@ -146,3 +146,14 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
 
 AUTH_USER_MODEL = 'mailings.CustomUser'
+
+# Настройки для статических файлов
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
+# Настройки аутентификации
+LOGIN_REDIRECT_URL = '/mailings/'
+LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = '/login/'
